@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace AurumCLI
 {
@@ -12,7 +13,7 @@ namespace AurumCLI
             ledger.Login("jpw0032");
             Console.WriteLine("Successfuly connected to AUCoin Dev network!");
 
-            ledger.Write("Hello, Blockchain!" + new Random().Next());
+            ledger.Write("Hello, Blockchain!");
             Console.WriteLine(ledger.Read().ToString());
         }
     }

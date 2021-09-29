@@ -3,6 +3,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Azure.Security.ConfidentialLedger;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace AurumCLI
         private ConfidentialLedgerClient LedgerClient;
         private bool IsLoggedIn = false;
 
+        public string CurrentUserId;
         public const string ConfidentialLedgerUrl = "https://aucoindev.confidential-ledger.azure.com";
 
         public LedgerModel()
@@ -71,15 +73,17 @@ namespace AurumCLI
             };
 
             // Create the ledger client using a transport that uses our custom ServerCertificateCustomValidationCallback. 
-            var options = new ConfidentialLedgerClientOptions { Transport = new HttpClientTransport(httpHandler) };
-            LedgerClient = new ConfidentialLedgerClient(new Uri(ConfidentialLedgerUrl), new DefaultAzureCredential(), options);
+            Uri uri = new (ConfidentialLedgerUrl);
+            ConfidentialLedgerClientOptions options = new() { Transport = new HttpClientTransport(httpHandler) };
+            AzureCliCredential credential = new ();
+
+            LedgerClient = new ConfidentialLedgerClient(uri, credential, options);
         }
 
         public bool Login(string username)
         {
             if (LedgerClient == null) return false;
-            LedgerCredentials credentials = new();
-            List<string> aadIDs = credentials.GetADDIDs();
+            List<string> aadIDs = LedgerCredentials.GetADDIDs();
 
             string managedId = username switch
             {
@@ -94,7 +98,9 @@ namespace AurumCLI
 
         public void Write(string data)
         {
-            Response postResponse = LedgerClient.PostLedgerEntry(RequestContent.Create(data));
+            LedgerMessage msg = new() { contents = data };
+            var json = JsonConvert.SerializeObject(msg);
+            Response postResponse = LedgerClient.PostLedgerEntry(RequestContent.Create(json));
             postResponse.Headers.TryGetValue(ConfidentialLedgerConstants.TransactionIdHeaderName, out string transactionId);
             Console.WriteLine($"Appended transaction with Id: {transactionId}");
         }

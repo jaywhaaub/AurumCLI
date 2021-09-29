@@ -11,6 +11,6 @@ namespace AurumCLI
     {
         //TODO: Get AAD IDs from Azure Key Vault
 
-        public List<string> GetADDIDs() => File.ReadAllLines(@"C:\MS-Blockchain-AAD-IDs.txt").ToList();
+        public static List<string> GetADDIDs() => File.ReadAllLines(@"C:\MS-Blockchain-AAD-IDs.txt").ToList();
     }
 }
